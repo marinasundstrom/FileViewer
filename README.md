@@ -7,7 +7,7 @@ For exercise details, check EXERCISE.md.
 ## How it works
 
 The first time the app is running, it loads the initial data consisting of file paths.
-Then, the app creates a graph of nodes representing directories and folders.
+Then, the app creates a graph of nodes representing directories and files.
 
 The nodes can be viewed and manipulated in the interface, by adding and removing child items.
 
