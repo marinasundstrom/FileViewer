@@ -1,0 +1,60 @@
+﻿@using FileViewer.Models; 
+
+@if (IsVisible)
+{
+    <div class="modal" tabindex="-1" role="dialog" style="display: block">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete "@item.Name"?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" @onclick="Confirm">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private Item item;
+
+    [Parameter]
+    public Func<Item, Task<bool>> OnConfirmed { get; set; }
+
+    [Parameter]
+    public EventCallback OnShown { get; set; }
+
+    [Parameter]
+    public EventCallback OnClosed { get; set; }
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    private async void Confirm()
+    {
+        if (await OnConfirmed.Invoke(item))
+        {
+            await Close();
+        }
+    }
+
+    public async Task Show(Item item)
+    {
+        IsVisible = true;
+        this.item = item;
+        await OnClosed.InvokeAsync(null);
+    }
+
+    public async Task Close()
+    {
+        IsVisible = false;
+        await OnClosed.InvokeAsync(null);
+
+        StateHasChanged();
+    }
+}

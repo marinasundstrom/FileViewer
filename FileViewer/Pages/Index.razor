@@ -1,0 +1,127 @@
+﻿@page "/"
+@using FileViewer.Models
+@inject HttpClient Http
+@inject LocalStorage LocalStorage
+@inject FileSystemService FileSystem
+@inject IItemModelBuilder ItemModelBuilder
+@inject IItemManager ItemManager
+
+<CreateDirectoryModal @ref="createDirectoryModal" OnConfirmed="OnCreateDictionaryConfirmed" />
+<CreateFileModal @ref="createFileModal" OnConfirmed="OnCreateFileConfirmed" />
+
+<div class="container">
+
+    <h1 class="font-weight-light text-center text-lg-left mt-4 mb-0">File Viewer</h1>
+
+    <hr class="mt-2 mb-5">
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Directories</h5>
+
+                    <DirectoryTree @ref="tree" RootDirectory="@rootItem"
+                                   @bind-SelectedItem="selectedItem"></DirectoryTree>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            @if (selectedItem != null)
+            {
+                <DirectoryPathDisplay Item="@selectedItem" OnNodeClicked="OnItemClicked"></DirectoryPathDisplay>
+
+                @if (selectedItem is FileItem)
+                {
+                    <div>
+                        <h2><i class="oi oi-file"></i> @selectedItem.Name</h2>
+
+                        <FileView FileItem="(FileItem)selectedItem"></FileView>
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        <h2><i class="oi oi-folder"></i> @selectedItem.GetDisplayName()</h2>
+
+                        <div style="margin-bottom: 10px">
+                            <button class="btn btn-outline-primary" @onclick="async () => await createDirectoryModal.Show()"><i class="oi oi-plus"></i> Create dictionary</button>
+                            <button class="btn btn-outline-primary" @onclick="async () => await createFileModal.Show()"><i class="oi oi-plus"></i> Create file</button>
+                        </div>
+
+                        <div style="margin-bottom: 10px">
+                            <select class="form-control" @bind="displayMode">
+                                <option value="List">List</option>
+                                <option value="Grid">Grid</option>
+                            </select>
+                        </div>
+
+                        <DirectoryView DirectoryItem="(DirectoryItem)selectedItem" OnItemClicked="OnItemClicked" DisplayMode="@(Enum.Parse<DisplayMode>(displayMode))"></DirectoryView>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    CreateDirectoryModal createDirectoryModal;
+    CreateFileModal createFileModal;
+
+    string displayMode = nameof(DisplayMode.List);
+
+    DirectoryTree tree;
+    Item selectedItem;
+    DirectoryItem rootItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var rootNode = await FileSystem.GetRootAsync();
+
+        rootItem = (DirectoryItem)ItemModelBuilder.CreateModel(rootNode);
+
+        selectedItem = rootItem;
+    }
+
+    private void OnItemClicked(Item item)
+    {
+        tree.Expand(item);
+        selectedItem = item;
+    }
+
+    private async Task<bool> OnCreateDictionaryConfirmed(CreateDirectoryModal.Model model)
+    {
+        if (((DirectoryItem)selectedItem).ChildItems?.Any(n => n.Name == model.Name) ?? false)
+        {
+            // TODO: Handle file name already taken.
+
+            return false;
+        }
+
+        var newNode = await ItemManager.CreateDirectoryAsync((DirectoryItem)selectedItem, model.Name);
+
+        rootItem.Expand(newNode);
+
+        StateHasChanged();
+
+        return true;
+    }
+
+    private async Task<bool> OnCreateFileConfirmed(CreateFileModal.Model model)
+    {
+        if (((DirectoryItem)selectedItem).ChildItems?.Any(n => n.Name == model.Name) ?? false)
+        {
+            // TODO: Handle file name already taken.
+
+            return false;
+        }
+
+        var newNode = await ItemManager.CreateFileAsync(((DirectoryItem)selectedItem), $"{model.Name}.{model.Extension}");
+
+        rootItem.Expand(newNode);
+
+        StateHasChanged();
+
+        return true;
+    }
+} 

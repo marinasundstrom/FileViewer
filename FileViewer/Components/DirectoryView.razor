@@ -1,0 +1,81 @@
+﻿@using FileViewer.Services
+@using FileViewer.Models
+@inject IItemManager FileItemManager
+@inject IItemModelBuilder ItemModelBuilder
+
+<DeleteItemModal @ref="deleteItemModal" OnConfirmed="OnDeleteItemConfirmed"></DeleteItemModal>
+
+<div class="row text-center text-lg-left">
+
+    @if (DirectoryItem != null)
+    {
+        @if (DisplayMode == DisplayMode.Grid)
+        {
+            @foreach (var childItem in DirectoryItem.ChildItems)
+            {
+                <div class="col-lg-3 col-md-4 col-6">
+                    <a href="#" class="d-block mb-4 h-100 animated fadeIn faster" style="cursor: pointer" @onclick="@(async () => await OnItemClicked.InvokeAsync(childItem))">
+                        <img class="img-fluid img-thumbnail" src="https://source.unsplash.com/pWkk7iiCoDM/400x300" alt="@childItem.GetDisplayName()">
+                    </a>
+                </div>
+            }
+        }
+        else if (DisplayMode == DisplayMode.List)
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Path</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var childItem in DirectoryItem.ChildItems)
+                        {
+                            <tr class="animated fadeIn faster" style="cursor: pointer" @onclick="@(async () => await OnItemClicked.InvokeAsync(childItem))">
+                                <td>
+                                    @if (childItem is FileItem)
+                                    {
+                                        <i class="oi oi-file"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="oi oi-folder"></i>
+                                    }
+                                </td>
+                                <td><a href="#">@childItem.GetDisplayName()</a></td>
+                                <td>@childItem?.ContainingDirectory?.GetFullPath()</td>
+                                <td><a href="#"><i class="oi oi-delete" @onclick="@(async () => await deleteItemModal.Show(childItem))" @onclick:stopPropagation></i></a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    DeleteItemModal deleteItemModal;
+
+    [Parameter]
+    public DirectoryItem DirectoryItem { get; set; }
+
+    [Parameter]
+    public DisplayMode DisplayMode { get; set; } = DisplayMode.List;
+
+    [Parameter]
+    public EventCallback<Item> OnItemClicked { get; set; }
+
+    private async Task<bool> OnDeleteItemConfirmed(Item item)
+    {
+        await FileItemManager.DeleteItemAsync(item);
+
+        StateHasChanged();
+
+        return true;
+    }
+}

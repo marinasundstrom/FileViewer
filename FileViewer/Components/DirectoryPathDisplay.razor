@@ -1,0 +1,51 @@
+﻿@using FileViewer.Services
+@using FileViewer.Models
+
+<nav aria-label="breadcrumb">
+    @if (Item != null)
+    {
+        var nodes = EnumerateAncestorNodes(Item);
+
+        <ol class="breadcrumb">
+            @foreach (var node in nodes)
+            {
+                var name = node.GetDisplayName();
+
+                if (node != nodes.LastOrDefault())
+                {
+                    <li class="breadcrumb-item"><a href="#" @onclick="@(async () => await OnNodeClicked.InvokeAsync(node))">@name</a></li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@name</li>
+                }
+            }
+        </ol>
+    }
+</nav>
+
+@code {
+    [Parameter]
+    public Item Item { get; set; }
+
+    [Parameter]
+    public EventCallback<Item> OnNodeClicked { get; set; }
+
+    /// <summary>
+    /// Enumerate all ancestor nodes of the specified node.
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    static IEnumerable<Item> EnumerateAncestorNodes(Item item)
+    {
+        if (item.ContainingDirectory != null)
+        {
+            foreach (var item2 in EnumerateAncestorNodes(item.ContainingDirectory))
+            {
+                yield return item2;
+            }
+        }
+
+        yield return item;
+    }
+}

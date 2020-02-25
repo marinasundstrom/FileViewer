@@ -1,0 +1,66 @@
+﻿@using FileViewer.Services
+@using FileViewer.Models;
+
+@if (DirectoryItem != null)
+{
+    var name = DirectoryItem.GetDisplayName();
+    var isSelectedValue = DirectoryTree.SelectedItem == DirectoryItem;
+
+    @if (DirectoryItem.ChildItems?.Any(n => n is DirectoryItem) ?? false)
+    {
+        <span class="caret" @onclick="OnToggleClicked"></span><a href="#"
+                                                                 @onclick="@(async () => await OnClicked.InvokeAsync(DirectoryItem))"
+                                                                 @onclick:preventDefault>@name</a>
+                                                                @if (DirectoryItem.IsExpanded)
+                                                                {
+                                                                    <ul class="nested">
+                                                                        @foreach (var childItem in DirectoryItem.ChildItems.OfType<DirectoryItem>())
+                                                                        {
+                                                                            <li>
+                                                                                <DirectoryTreeNode DirectoryItem="childItem"
+                                                                                                   OnClicked="OnClicked"
+                                                                                                   OnExpanded="OnExpanded"
+                                                                                                   OnCollapsed="OnCollapsed" />
+                                                                            </li>
+                                                                        }
+
+                                                                    </ul>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <a href="#"
+                                                                   @onclick="@(async () => await OnClicked.InvokeAsync(DirectoryItem))"
+                                                                   @onclick:preventDefault>@name</a>
+                                                            }
+}
+
+@code {
+    [Parameter]
+    public DirectoryItem DirectoryItem { get; set; }
+
+    [Parameter]
+    public EventCallback<DirectoryItem> OnClicked { get; set; }
+
+    [Parameter]
+    public EventCallback<DirectoryItem> OnExpanded { get; set; }
+
+    [Parameter]
+    public EventCallback<DirectoryItem> OnCollapsed { get; set; }
+
+    [CascadingParameter]
+    DirectoryTree DirectoryTree { get; set; }
+
+    private async Task OnToggleClicked()
+    {
+        DirectoryItem.IsExpanded = !DirectoryItem.IsExpanded;
+        if (DirectoryItem.IsExpanded)
+        {
+            await OnExpanded.InvokeAsync(DirectoryItem);
+        }
+        else
+        {
+            await OnCollapsed.InvokeAsync(DirectoryItem);
+        }
+    }
+}

@@ -1,0 +1,47 @@
+﻿@using FileViewer.Services
+@using FileViewer.Models;
+ 
+<ul class="treeview">
+    <CascadingValue Value="this">
+        <DirectoryTreeNode DirectoryItem="@RootDirectory"
+                           OnClicked="OnTreeNodeClicked"
+                           OnExpanded="OnNodeExpanded"
+                           OnCollapsed="OnNodeCollapsed" />
+    </CascadingValue>
+</ul>
+
+@code {
+    [Parameter]
+    public DirectoryItem RootDirectory { get; set; }
+
+    [Parameter]
+    public EventCallback<DirectoryItem> OnNodeClicked { get; set; }
+
+    [Parameter]
+    public EventCallback<DirectoryItem> OnNodeExpanded { get; set; }
+
+    [Parameter]
+    public EventCallback<DirectoryItem> OnNodeCollapsed { get; set; }
+
+    [Parameter]
+    public Item SelectedItem { get; set; }
+
+    [Parameter]
+    public EventCallback<Item> SelectedItemChanged { get; set; }
+
+    public void Expand(Item item)
+    {
+        RootDirectory.Expand(item);
+    }
+
+    private async Task OnTreeNodeClicked(DirectoryItem directoryItem)
+    {
+        await OnNodeClicked.InvokeAsync(directoryItem);
+        SelectedItem = directoryItem;
+        await SelectedItemChanged.InvokeAsync(directoryItem);
+
+        //directoryItem.Expand();
+
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,85 @@
+﻿@if (IsVisible)
+{
+    <EditForm Model="@model" OnValidSubmit="Confirm">
+        <DataAnnotationsValidator />
+        <div class="modal" tabindex="-1" role="dialog" style="display: block">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create file</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="col-auto">
+                                <label for="fileNameInput">Name</label>
+                                <input type="text" class="form-control" id="fileNameInput" placeholder="Name" @bind="model.Name" @bind:event="oninput">
+                            </div>
+                            <div class="col-auto">
+                                <label for="Extension">Extension</label>
+                                <input type="text" class="form-control" id="fileExtensionsInput" placeholder="Extension" @bind="model.Extension" @bind:event="oninput">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <ValidationSummary></ValidationSummary>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private Model model;
+
+    public class Model
+    {
+        [Required]
+        public string Name { get; set; }
+
+        [Required]
+        public string Extension { get; set; }
+    }
+
+    [Parameter]
+    public Func<Model, Task<bool>> OnConfirmed { get; set; }
+
+    [Parameter]
+    public EventCallback OnShown { get; set; }
+
+    [Parameter]
+    public EventCallback OnClosed { get; set; }
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    private async void Confirm()
+    {
+        if (await OnConfirmed.Invoke(model))
+        {
+            await Close();
+        }
+    }
+
+    public async Task Show()
+    {
+        IsVisible = true;
+        model = new Model();
+        await OnClosed.InvokeAsync(null);
+    }
+
+    public async Task Close()
+    {
+        IsVisible = false;
+        await OnClosed.InvokeAsync(null);
+
+        StateHasChanged();
+    }
+}
