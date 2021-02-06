@@ -24,7 +24,7 @@ When viewing directories, there are two Display Modes: List and Grid. The Grid m
 <img src="/Screenshots/Screenshot3.png" />
 
 ## Requirements
-* .NET Core 3.1 - for Blazor
+* .NET 5 - for Blazor
 * Node.JS - for compiling and bundling of assets
 
 ## To be improved
