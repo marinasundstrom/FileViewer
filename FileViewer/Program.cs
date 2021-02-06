@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 using Browser.Storage;
 
 using FileViewer.Services;
 
-using Microsoft.AspNetCore.Blazor.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileViewer
@@ -16,12 +18,18 @@ namespace FileViewer
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
+            builder.Services.AddScoped(sp =>
+                new HttpClient
+                {
+                    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+                });
+
             builder.Services
                 .AddFileViewerCoreServices()
-                .AddSingleton<IStorageProvider, LocalStorageProvider>()
-                .AddSingleton<FileSystemService>()
-                .AddSingleton<IItemModelBuilder, ItemModelBuilder>()
-                .AddSingleton<IItemManager, ItemManager>()
+                .AddScoped<IStorageProvider, LocalStorageProvider>()
+                .AddScoped<FileSystemService>()
+                .AddScoped<IItemModelBuilder, ItemModelBuilder>()
+                .AddScoped<IItemManager, ItemManager>()
                 .AddStorage();
 
             await builder.Build().RunAsync();

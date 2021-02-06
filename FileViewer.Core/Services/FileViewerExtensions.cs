@@ -6,9 +6,9 @@ namespace FileViewer.Services
     {
         public static IServiceCollection AddFileViewerCoreServices(this IServiceCollection services)
         {
-            services.AddSingleton<INodeTreeLoader, NodeTreeLoader>();
-            services.AddSingleton<INodeTreeBuilder, NodeTreeBuilder>();
-            services.AddSingleton<FileSystem>();
+            services.AddScoped<INodeTreeLoader, NodeTreeLoader>();
+            services.AddScoped<INodeTreeBuilder, NodeTreeBuilder>();
+            services.AddScoped<FileSystem>();
 
             return services;
         }
