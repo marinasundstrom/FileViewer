@@ -15,6 +15,14 @@ There is a tree view displaying the hierarchy of directories.
 
 When viewing directories, there are two Display Modes: List and Grid. The Grid mode is currently incomplete.
 
+## Screenshots
+
+<img src="/Screenshots/Screenshot1.png" />
+
+<img src="/Screenshots/Screenshot2.png" />
+
+<img src="/Screenshots/Screenshot3.png" />
+
 ## Requirements
 * .NET Core 3.1 - for Blazor
 * Node.JS - for compiling and bundling of assets
